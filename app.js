@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 const cors = require('cors');
 
 
@@ -8,7 +8,7 @@ app.use(cors({
     origin: '*'
 }));
 
-app.use('/composite/homepage', require('./controllers/homepage'));
+app.use('/api/composite', require('./controllers/composite'));
 
 app.get('/heartbeat', (req, res) => {
     res.send('Connection is stable...')
