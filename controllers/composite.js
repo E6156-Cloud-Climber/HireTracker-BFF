@@ -6,10 +6,10 @@ let composite = express.Router()
 
 composite.use(express.json())
 
-composite.get('/positions/:position_id', (req, res) => {
+composite.get('/positions/:position_id', async (req, res) => {
     position_id = req.params.position_id
 
-    fetch(gen_url(`/positions/${position_id}`, 2))
+    await fetch(gen_url(`/positions/${position_id}`, 2))
         .then((resp) => {
             return resp.json()
         })
