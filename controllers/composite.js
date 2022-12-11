@@ -76,5 +76,44 @@ composite.get('/posts', async (req, res) => {
     }
 })
 
+composite.get('/positions/:position_id/timeline', async (req, res) => {
+    let position_id = req.params.position_id
+
+    try {
+        let timeline = await fetch(gen_url(`/positions/${position_id}/timeline`, 3))
+            .then((resp) => {
+                return resp.json()
+            })
+        try {
+            let position = await fetch(gen_url(`/composite/${timeline.links.position}`, 0))
+                .then((resp) => {
+                    return resp.json()
+                })
+            timeline.position = position
+            let promises = timeline.phases.map((phase, idx) => {
+                return fetch(gen_url(`${phase.links.phase}`, 3))
+                    .then((resp) => {
+                        return resp.json()
+                    })
+                    .then((phase) => {
+                        timeline.phases[idx].phase = phase
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        res.status(500).json({ error: err })
+                    })
+            });
+            await Promise.all(promises)
+            res.json(timeline)
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ error: err })
+        }
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: err })
+    }
+})
+
 
 module.exports = composite;
