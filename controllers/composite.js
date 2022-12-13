@@ -33,6 +33,48 @@ composite.get('/positions/:position_id', async (req, res) => {
         })
 })
 
+composite.get('/positions', async (req, res) => {
+    let company_id = req.query.company_id ?? '';
+    let search_string = req.query.search_string ?? "";
+    let position_type = req.query.position_type ?? "";
+    let year = req.query.year ?? '';
+    let active = Number(req.query.active ?? 1);
+
+    let page = Number(req.query.page ?? 1); // page number is 1-indexed
+    let limit = Number(req.query.limit ?? 20);
+
+    try {
+        let resp = await fetch(gen_url(`/positions`, 2, {
+            company_id: company_id,
+            search_string: search_string,
+            position_type: position_type,
+            year: year,
+            active: active,
+            page: page,
+            limit: limit
+        })).then((resp) => {
+            return resp.json()
+        });
+
+        let promises = resp.positions.map((pos, idx) => {
+            return fetch(gen_url(`/companies/${pos.company_id}`, 2))
+                .then((resp) => {
+                    return resp.json()
+                })
+                .then((company) => {
+                    resp.positions[idx].company = company
+                })
+                .catch((err) => {
+                    res.status(500).json({ error: err })
+                })
+        })
+        await Promise.all(promises)
+        res.json(resp)
+    } catch (err) {
+        res.status(500).json({ error: err })
+    }
+})
+
 composite.get('/posts', async (req, res) => {
     let company_id = req.query.company_id ?? ''
     let position_id = req.query.position_id ?? ''
