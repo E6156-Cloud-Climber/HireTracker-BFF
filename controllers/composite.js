@@ -6,7 +6,7 @@ let composite = express.Router()
 
 composite.use(express.json())
 
-composite.get('/positions/:position_id', async (req, res) => {
+composite.get('/positions/:position_id', async (req, res, next) => {
     position_id = req.params.position_id
 
     await fetch(gen_url(`/positions/${position_id}`, 2))
@@ -23,17 +23,16 @@ composite.get('/positions/:position_id', async (req, res) => {
                     res.json(position)
                 })
                 .catch((err) => {
-                    console.log(err);
-                    res.status(500).json({ error: err })
+                    next(err)
                 })
         })
         .catch((err) => {
             console.log(err);
-            res.status(500).json({ error: err })
+            next(err)
         })
 })
 
-composite.get('/positions', async (req, res) => {
+composite.get('/positions', async (req, res, next) => {
     let company_id = req.query.company_id ?? '';
     let search_string = req.query.search_string ?? "";
     let position_type = req.query.position_type ?? "";
@@ -65,17 +64,18 @@ composite.get('/positions', async (req, res) => {
                     resp.positions[idx].company = company
                 })
                 .catch((err) => {
-                    res.status(500).json({ error: err })
+                    next(err)
                 })
         })
         await Promise.all(promises)
         res.json(resp)
     } catch (err) {
-        res.status(500).json({ error: err })
+        next(err)
     }
 })
 
-composite.get('/posts', async (req, res) => {
+// Return position_name, company_name, phase_name, description, 
+composite.get('/posts', async (req, res, next) => {
     let company_id = req.query.company_id ?? ''
     let position_id = req.query.position_id ?? ''
     let page = Number(req.query.page ?? 1)
@@ -93,10 +93,10 @@ composite.get('/posts', async (req, res) => {
                 })
                 .then((phase) => {
                     resp.posts[idx].phase = phase
+                    resp.posts[idx].phase_name = phase.name
                 })
                 .catch((err) => {
-                    console.log(err);
-                    res.status(500).json({ error: err })
+                    next(err)
                 })
             let b = fetch(gen_url(`/composite/${post.links.position}`, 0))
                 .then((resp) => {
@@ -104,21 +104,22 @@ composite.get('/posts', async (req, res) => {
                 })
                 .then((position) => {
                     resp.posts[idx].position = position
+                    resp.posts[idx].position_name = position.name
+                    resp.posts[idx].company_name = position.company.name
                 })
                 .catch((err) => {
-                    console.log(err);
-                    res.status(500).json({ error: err })
+                    next(err)
                 })
             return Promise.all([a, b])
         });
         await Promise.all(promises)
         res.json(resp)
     } catch (err) {
-        res.status(500).json({ error: err })
+        next(err)
     }
 })
 
-composite.get('/positions/:position_id/timeline', async (req, res) => {
+composite.get('/positions/:position_id/timeline', async (req, res, next) => {
     let position_id = req.params.position_id
 
     try {
@@ -141,19 +142,16 @@ composite.get('/positions/:position_id/timeline', async (req, res) => {
                         timeline.phases[idx].phase = phase
                     })
                     .catch((err) => {
-                        console.log(err);
-                        res.status(500).json({ error: err })
+                        next(err)
                     })
             });
             await Promise.all(promises)
             res.json(timeline)
         } catch (err) {
-            console.log(err)
-            res.status(500).json({ error: err })
+            next(err)
         }
     } catch (err) {
-        console.log(err)
-        res.status(500).json({ error: err })
+        next(err)
     }
 })
 

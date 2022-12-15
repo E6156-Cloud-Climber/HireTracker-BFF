@@ -11,6 +11,11 @@ const svc_port3 = process.env.SVCPORT3 || svc_port
 const svc_endpoint3 = process.env.SVCENDPOINT3 || svc_endpoint
 const svc_prefix3 = process.env.SVCPREFIX3 || svc_prefix
 
+console.log("svc_endpoint:", svc_endpoint)
+console.log("svc_endpoint1:", `${svc_endpoint1}:${svc_port1}${svc_prefix1}`)
+console.log("svc_endpoint2:", `${svc_endpoint2}:${svc_port2}${svc_prefix2}`)
+console.log("svc_endpoint3:", `${svc_endpoint3}:${svc_port3}${svc_prefix3}`)
+
 function gen_url(path, svc = 0, params = {}) {
     let url = ''
     if (svc == 0)
