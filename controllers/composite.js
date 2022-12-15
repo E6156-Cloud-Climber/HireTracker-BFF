@@ -98,7 +98,7 @@ composite.get('/posts', async (req, res, next) => {
                 .catch((err) => {
                     next(err)
                 })
-            let b = fetch(gen_url(`/composite/${post.links.position}`, 0))
+            let b = fetch(gen_url(`/composite${post.links.position}`, 0))
                 .then((resp) => {
                     return resp.json()
                 })
@@ -128,7 +128,7 @@ composite.get('/positions/:position_id/timeline', async (req, res, next) => {
                 return resp.json()
             })
         try {
-            let position = await fetch(gen_url(`/composite/${timeline.links.position}`, 0))
+            let position = await fetch(gen_url(`/composite${timeline.links.position}`, 0))
                 .then((resp) => {
                     return resp.json()
                 })
