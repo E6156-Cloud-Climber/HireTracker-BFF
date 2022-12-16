@@ -1,10 +1,102 @@
 const express = require('express')
 const fetch = require('node-fetch')
 const gen_url = require('../conn')
+moment = require('moment')
 
 let composite = express.Router()
 
 composite.use(express.json())
+
+composite.post('/posts/:user_id', async (req, res, next) => {
+    console.log(req.body)
+    let user_id = parseInt(req.params.user_id)
+    let company_name = req.body.company_name
+    let position_name = req.body.position_name
+    let phase_id = req.body.phase_id
+    let description = req.body.description
+
+    if (!company_name) next(Error(`Invalid company_name=${company_name}`))
+    if (!position_name) next(Error(`Invalid position_name=${position_name}`))
+    if (!phase_id) next(Error(`Invalid phase_id=${phase_id}`))
+    if (!description) next(Error(`Invalid description=${description}`))
+
+    let company_id = undefined
+    let position_id = undefined
+
+    // , { method: 'POST' }
+    company_id = await fetch(gen_url('/companies', 2, { search_string: company_name })).then(
+        (resp) => { return resp.json() }
+
+    ).then((res) => {
+        console.log(res.companies)
+        if (res.companies) {
+            for (const company of res.companies) {
+                if (company.name.toLowerCase() === company_name.toLowerCase()) { return company.id }
+            }
+        }
+
+    }).catch((err) => next(err))
+    console.log(company_id)
+
+    position_id = await fetch(gen_url('/positions', 2, { search_string: position_name, company_id: company_id ? company_id : '' })).then(
+        (resp) => { return resp.json() }
+    ).then((res) => {
+        if (res.positions) {
+            for (const position of res.positions) {
+                if (position.name.toLowerCase() === position_name.toLowerCase()) { return position_id }
+            }
+        }
+    })
+    console.log(position_id)
+
+
+    if (company_id === undefined) {
+        company_id = await fetch(gen_url('/companies', 2), {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: company_name })
+        }).then((resp) => resp.json())
+            .then(res => { if ("company_id" in res) { return res.company_id } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) } })
+            .catch(err => next(err))
+    }
+
+    if (position_id === undefined) {
+        position_id = await fetch(gen_url('/positions', 2), {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ company_id: company_id, name: position_name, position_type: 1, active: 1, year: moment().year(), link: "" })
+        }).then(resp => resp.json())
+            .then(res => { if ("position_id" in res) { return res.position_id } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) } })
+            .catch(err => next(err))
+    }
+    console.log(position_id)
+
+    let post_id = await fetch(gen_url(`/users/${user_id}/posts`, 3), {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            phase_id: phase_id,
+            user_id: user_id,
+            position_id: position_id,
+            date: moment().format('YYYY-MM-DD'),
+            description: description
+        })
+    }).then(resp => resp.json())
+        .then(res => { if ("post_id" in res) { return res.post_id } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) } })
+        .catch(err => next(err))
+
+    res.json({ post_id: post_id })
+})
+
 
 composite.get('/positions/:position_id', async (req, res, next) => {
     position_id = req.params.position_id

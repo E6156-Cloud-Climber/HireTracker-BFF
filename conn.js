@@ -31,7 +31,8 @@ function gen_url(path, svc = 0, params = {}) {
         if (params[key] || params[key] === 0)
             strarr.push(`${key}=${params[key]}`)
     }
-    if (strarr) url += '?' + strarr.join('&')
+    if (strarr.length) url += '?' + strarr.join('&')
+    console.log(url)
     return url
 }
 
