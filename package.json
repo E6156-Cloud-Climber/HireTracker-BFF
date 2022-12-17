@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/E6156-Cloud-Climber/HireTracker-BFF#readme",
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.231.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "moment": "^2.29.4",
