@@ -8,7 +8,7 @@ let composite = express.Router()
 composite.use(express.json())
 
 composite.post('/posts/:user_id', async (req, res, next) => {
-    let user_id = parseInt(req.params.user_id)
+    let user_id = req.params.user_id
     let company_name = req.body.company_name
     let position_name = req.body.position_name
     let phase_id = req.body.phase_id
@@ -42,7 +42,7 @@ composite.post('/posts/:user_id', async (req, res, next) => {
     ).then((res) => {
         if (res.positions) {
             for (const position of res.positions) {
-                if (position.name.toLowerCase() === position_name.toLowerCase()) { return position_id }
+                if (position.name.toLowerCase() === position_name.toLowerCase()) { return position.id }
             }
         }
     })
