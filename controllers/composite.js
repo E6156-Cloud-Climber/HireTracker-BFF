@@ -23,6 +23,7 @@ composite.post('/posts/:user_id', async (req, res, next) => {
 
     let company_id = undefined
     let position_id = undefined
+    let new_pos = false
 
     company_id = await fetch(gen_url('/companies', 2, { search_string: company_name })).then(
         (resp) => { return resp.json() }
@@ -69,7 +70,13 @@ composite.post('/posts/:user_id', async (req, res, next) => {
             },
             body: JSON.stringify({ company_id: company_id, name: position_name, position_type: position_type, active: 1, year: year, link: "" })
         }).then(resp => resp.json())
-            .then(res => { if ("position_id" in res) { return res.position_id } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) } })
+            .then(res => {
+                if ("position_id" in res) {
+                    req.new_pos = true
+                    new_pos = true
+                    return res.position_id
+                } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) }
+            })
             .catch(err => next(err))
     }
 
@@ -90,7 +97,8 @@ composite.post('/posts/:user_id', async (req, res, next) => {
         .then(res => { if ("post_id" in res) { return res.post_id } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) } })
         .catch(err => next(err))
 
-    res.json({ post_id: post_id })
+    res.json({ post_id: post_id, new_pos: new_pos })
+    next()
 })
 
 
