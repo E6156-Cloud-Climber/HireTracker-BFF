@@ -7,7 +7,7 @@ let composite = express.Router()
 
 composite.use(express.json())
 
-composite.post('/posts/:user_id', async (req, res, next) => {
+composite.post('/users/:user_id/posts', async (req, res, next) => {
     let user_id = req.params.user_id
     let company_name = req.body.company_name
     let position_name = req.body.position_name
@@ -15,6 +15,8 @@ composite.post('/posts/:user_id', async (req, res, next) => {
     let description = req.body.description
     let year = req.body.year
     let position_type = req.body.position_type
+    let link = req.body.link
+    let date = req.body.date
 
     if (!company_name) next(Error(`Invalid company_name=${company_name}`))
     if (!position_name) next(Error(`Invalid position_name=${position_name}`))
@@ -68,7 +70,7 @@ composite.post('/posts/:user_id', async (req, res, next) => {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ company_id: company_id, name: position_name, position_type: position_type, active: 1, year: year, link: "" })
+            body: JSON.stringify({ company_id: company_id, name: position_name, position_type: position_type, active: 1, year: year, link: link })
         }).then(resp => resp.json())
             .then(res => {
                 if ("position_id" in res) {
@@ -90,7 +92,8 @@ composite.post('/posts/:user_id', async (req, res, next) => {
             phase_id: phase_id,
             user_id: user_id,
             position_id: position_id,
-            date: moment().format('YYYY-MM-DD'),
+            // date: moment().format('YYYY-MM-DD'),
+            date: date,
             description: description
         })
     }).then(resp => resp.json())
