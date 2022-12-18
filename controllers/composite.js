@@ -100,7 +100,9 @@ composite.post('/users/:user_id/posts', async (req, res, next) => {
         .then(res => { if ("post_id" in res) { return res.post_id } else { throw Error(`Invalid response.json()=${JSON.stringify(res)}`) } })
         .catch(err => next(err))
 
-    res.json({ post_id: post_id })
+    res.json({ post_id: post_id, new_pos: new_pos })
+
+    next()
 })
 
 
